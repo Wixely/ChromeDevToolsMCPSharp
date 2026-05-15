@@ -1,8 +1,7 @@
 # ChromeDevToolsMCPSharp
 
 A standalone C# **MCP (Model Context Protocol) server** that drives **Chrome via the Chrome DevTools Protocol** over Streamable HTTP. Uses [PuppeteerSharp](https://github.com/hardkoded/puppeteer-sharp) (.NET port of puppeteer-core) to attach to a running Chrome (`--remote-debugging-port`) or launch one under server control.
-
-This server is independent of (but in the same product family as) [PlaywrightMCPSharp](../PlaywrightMCPSharp). The focus here is **attaching to a debuggable Chrome instance** and exposing the CDP-level tool surface — pages, console, network, performance, emulation, cookies — rather than launching a fresh automation profile.
+The focus here is **attaching to a debuggable Chrome instance** and exposing the CDP-level tool surface — pages, console, network, performance, emulation, cookies — rather than launching a fresh automation profile.
 
 ## Features
 

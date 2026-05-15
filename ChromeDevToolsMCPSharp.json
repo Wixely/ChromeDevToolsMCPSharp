@@ -1,0 +1,71 @@
+{
+  "ChromeDevTools": {
+    "BrowserUrl": "http://localhost:9222",
+    "WebSocketEndpoint": null,
+    "AutoLaunch": false,
+    "ExecutablePath": null,
+    "Headless": true,
+    "UserDataDir": null,
+    "ExtraChromeArgs": [],
+    "AcceptInsecureCertificates": false,
+    "ViewportWidth": 1280,
+    "ViewportHeight": 800,
+    "DeviceScaleFactor": 1.0,
+    "ConnectionTimeoutMs": 30000,
+    "DefaultActionTimeoutMs": 30000,
+    "MaxConsoleBuffer": 500,
+    "MaxNetworkBuffer": 500,
+    "DisableScriptEvaluation": false,
+    "ReadOnly": false,
+    "RedactedHeaders": [ "authorization", "cookie", "set-cookie", "proxy-authorization", "x-api-key" ],
+    "EnableNavigation": true,
+    "EnableInput": true,
+    "EnableInspection": true,
+    "EnableConsole": true,
+    "EnableNetwork": true,
+    "EnableEmulation": true,
+    "EnablePerformance": true,
+    "EnableCookies": true,
+    "AllowedUrlPrefixes": [],
+    "BlockedUrlPrefixes": [],
+    "OutputDirectory": null
+  },
+  "Server": {
+    "Host": "localhost",
+    "Port": 5709,
+    "Path": "/mcp",
+    "WindowsServiceName": "ChromeDevToolsMCPSharp",
+    "Password": ""
+  },
+  "Serilog": {
+    "MinimumLevel": {
+      "Default": "Information",
+      "Override": {
+        "Microsoft": "Warning",
+        "Microsoft.Hosting.Lifetime": "Information",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "Console",
+        "Args": {
+          "outputTemplate": "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "File",
+        "Args": {
+          "path": "logs/chromedevmcp-.log",
+          "rollingInterval": "Day",
+          "retainedFileCountLimit": 14,
+          "fileSizeLimitBytes": 52428800,
+          "rollOnFileSizeLimit": true,
+          "shared": true,
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext}: {Message:lj}{NewLine}{Exception}"
+        }
+      }
+    ],
+    "Enrich": [ "FromLogContext", "WithMachineName", "WithProcessId", "WithThreadId" ]
+  }
+}

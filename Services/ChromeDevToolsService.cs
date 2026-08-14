@@ -103,6 +103,41 @@ public sealed class ChromeDevToolsService : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Attaches (or re-attaches) to a debuggable Chrome at the given CDP WebSocket endpoint,
+    /// replacing any current attachment. An existing connection is disconnected, never killed —
+    /// the browser may not be owned by this server.
+    /// </summary>
+    public async Task<IBrowser> AttachToWebSocketAsync(string wsEndpoint, CancellationToken ct)
+    {
+        await _connectLock.WaitAsync(ct);
+        try
+        {
+            if (_browser is { IsConnected: true })
+            {
+                _browser.Disconnect();
+            }
+            _log.LogInformation("Attaching to Chrome via WS endpoint {Endpoint}", wsEndpoint);
+            _browser = await Puppeteer.ConnectAsync(new ConnectOptions
+            {
+                BrowserWSEndpoint = wsEndpoint,
+                AcceptInsecureCerts = _options.AcceptInsecureCertificates,
+                ProtocolTimeout = Math.Max(1_000, _options.ConnectionTimeoutMs),
+                DefaultViewport = BuildDefaultViewport(),
+            });
+            HookBrowser(_browser);
+            foreach (var page in await _browser.PagesAsync())
+            {
+                Register(page);
+            }
+            return _browser;
+        }
+        finally
+        {
+            _connectLock.Release();
+        }
+    }
+
     public async Task<PageEntry> GetPageAsync(string? pageId, CancellationToken ct)
     {
         await GetBrowserAsync(ct);
@@ -196,10 +231,8 @@ public sealed class ChromeDevToolsService : IAsyncDisposable
         };
     }
 
-    private async Task<IBrowser> ConnectOrLaunchAsync(CancellationToken ct)
-    {
-        var timeout = Math.Max(1_000, _options.ConnectionTimeoutMs);
-        var defaultViewport = (_options.ViewportWidth > 0 && _options.ViewportHeight > 0)
+    private ViewPortOptions? BuildDefaultViewport() =>
+        (_options.ViewportWidth > 0 && _options.ViewportHeight > 0)
             ? new ViewPortOptions
             {
                 Width = _options.ViewportWidth,
@@ -207,6 +240,11 @@ public sealed class ChromeDevToolsService : IAsyncDisposable
                 DeviceScaleFactor = _options.DeviceScaleFactor,
             }
             : null;
+
+    private async Task<IBrowser> ConnectOrLaunchAsync(CancellationToken ct)
+    {
+        var timeout = Math.Max(1_000, _options.ConnectionTimeoutMs);
+        var defaultViewport = BuildDefaultViewport();
 
         if (!string.IsNullOrWhiteSpace(_options.WebSocketEndpoint))
         {

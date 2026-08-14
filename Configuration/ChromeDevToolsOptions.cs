@@ -16,13 +16,13 @@ public sealed class ChromeDevToolsOptions
     /// <summary>If true (and no BrowserUrl/WebSocketEndpoint), launch a fresh Chrome under server control.</summary>
     public bool AutoLaunch { get; set; } = false;
 
-    /// <summary>Path to a Chrome/Chromium binary. Used only when AutoLaunch=true. Empty = PuppeteerSharp downloads its own.</summary>
+    /// <summary>Path to a Chrome/Chromium binary. Used by AutoLaunch and the launch_chrome tool. Empty = probe standard install locations (launch_chrome) or download via PuppeteerSharp (AutoLaunch).</summary>
     public string? ExecutablePath { get; set; }
 
     /// <summary>Launch Chrome without UI (only when AutoLaunch=true). Default true.</summary>
     public bool Headless { get; set; } = true;
 
-    /// <summary>Optional persistent user-data directory. Only used when AutoLaunch=true. Empty = isolated temp profile.</summary>
+    /// <summary>Optional persistent user-data directory for AutoLaunch and the launch_chrome tool. Must not be the regular Chrome profile — Chrome 136+ refuses remote debugging there. Empty = isolated dedicated profile.</summary>
     public string? UserDataDir { get; set; }
 
     /// <summary>Extra command-line flags appended when AutoLaunch=true.</summary>

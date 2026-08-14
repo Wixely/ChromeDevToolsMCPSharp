@@ -19,7 +19,13 @@ The server does not control Chrome on its own — it needs to be **told how to r
 
 ### Mode A — Attach to a Chrome you launched (recommended)
 
-1. Start Chrome with a remote debugging port. **Use a dedicated profile** so it doesn't fight your normal browser.
+> **You cannot attach to your normal Chrome.** Since Chrome 136, the DevTools remote-debugging
+> API is refused for the default user profile — a regular Chrome window answers `404` on every
+> `/json/*` endpoint even if it holds the port. A debuggable Chrome **must** be a separate
+> instance started with both `--remote-debugging-port` and a dedicated `--user-data-dir`.
+> The `launch_chrome` tool does this for you (see below); the commands here do it by hand.
+
+1. Start Chrome with a remote debugging port and a dedicated profile directory.
 
    Windows (PowerShell):
    ```powershell
@@ -87,6 +93,14 @@ Takes precedence over `BrowserUrl`.
 
 ## Tools
 
+### Lifecycle
+`launch_chrome` — launch the locally installed Chrome as a dedicated debuggable instance (own
+`--user-data-dir`, `--remote-debugging-port`) and attach to it. Defaults to the port from
+`ChromeDevTools:BrowserUrl` and a profile under `%LOCALAPPDATA%\ChromeDevToolsMCPSharp`. If a
+debuggable Chrome already listens on the port it attaches instead of launching; if the port is
+held by a non-debuggable Chrome (e.g. your regular browser) it fails with instructions. Gated by
+`ReadOnly=false`.
+
 ### Navigation
 `list_pages`, `select_page`, `new_page`, `close_page`, `navigate_page`, `go_back`, `go_forward`, `reload_page`, `wait_for_selector`, `wait_for_navigation`, `handle_dialog`.
 
@@ -120,9 +134,9 @@ Configure via `ChromeDevToolsMCPSharp.json` or environment variables. Environmen
 | `ChromeDevTools:BrowserUrl` | _(none)_ | URL of a Chrome started with `--remote-debugging-port=…`. |
 | `ChromeDevTools:WebSocketEndpoint` | _(none)_ | CDP WebSocket endpoint (takes precedence over BrowserUrl). |
 | `ChromeDevTools:AutoLaunch` | `false` | If true and no URL/endpoint is set, launch a Chrome under server control. |
-| `ChromeDevTools:ExecutablePath` | _(none)_ | Custom Chrome/Chromium binary (only when AutoLaunch=true). Empty = PuppeteerSharp downloads its own. |
-| `ChromeDevTools:Headless` | `true` | Launch headless (only when AutoLaunch=true). |
-| `ChromeDevTools:UserDataDir` | _(none)_ | Persistent profile directory (only when AutoLaunch=true). |
+| `ChromeDevTools:ExecutablePath` | _(none)_ | Custom Chrome/Chromium binary for AutoLaunch and `launch_chrome`. Empty = probe standard install locations (`launch_chrome`) or download via PuppeteerSharp (AutoLaunch). |
+| `ChromeDevTools:Headless` | `true` | Launch headless (only when AutoLaunch=true; `launch_chrome` takes a parameter). |
+| `ChromeDevTools:UserDataDir` | _(none)_ | Persistent profile directory for AutoLaunch and `launch_chrome`. Must not be the regular Chrome profile (Chrome 136+ refuses debugging there). |
 | `ChromeDevTools:ExtraChromeArgs` | `[]` | Extra command-line flags when AutoLaunch=true. |
 | `ChromeDevTools:AcceptInsecureCertificates` | `false` | Ignore TLS errors in the controlled browser. |
 | `ChromeDevTools:ViewportWidth` / `Height` / `DeviceScaleFactor` | `1280` / `800` / `1` | Default viewport applied to new pages. |
